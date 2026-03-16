@@ -58,6 +58,10 @@ class GeneratorSource:
         self._seed: int = seed
 
     def get_tasks(self) -> List[Task]:
+        """
+        Generate random tasks with params from a 'payload_params' dict
+        :return: list of tasks
+        """
         random.seed(self._seed)
         output: List[Task] = []
 
@@ -71,6 +75,9 @@ class GeneratorSource:
         return output
 
 class APISource:
+    """
+    Mocks API request to get new tasks
+    """
     __slots__ = ('_url', '_mock_api_data',)
 
     def __init__(self, url: str):
@@ -98,6 +105,10 @@ class APISource:
         }
 
     def get_tasks(self) -> List[Task]:
+        """
+        Mocks API request. Gets task from constant dict
+        :return: list of tasks
+        """
         output: List[Task] = []
         for task in self._mock_api_data.values():
             output.append(Task(id=task["id"], payload=task["payload"]))
