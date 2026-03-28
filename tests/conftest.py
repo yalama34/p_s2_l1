@@ -5,8 +5,8 @@ import pathlib
 def temp_valid_file(tmp_path: pathlib.Path) -> str:
     file_path = tmp_path / "test.txt"
     data = [
-        "1. {\"test\": \"test1\"}",
-        "2. {\"test\": \"test2\"}",
+        "1|d1|1|new|01.01.2020",
+        "2|d2|2|in_progress|02.01.2020",
     ]
     file_path.write_text("\n".join(data))
     return str(file_path)
@@ -25,8 +25,8 @@ def temp_invalid_file(tmp_path: pathlib.Path) -> str:
 def temp_invalid_line_file(tmp_path: pathlib.Path) -> str:
     file_path = tmp_path / "test.txt"
     data = [
-        "1. {\"test\": \"test1\"}",
-        "2 {\"test\": \"test2\"}",
+        "1|d1|1|new|01.01.2020",
+        "2|d2|2|in_progress",
     ]
     file_path.write_text("\n".join(data))
     return str(file_path)
@@ -35,10 +35,10 @@ def temp_invalid_line_file(tmp_path: pathlib.Path) -> str:
 def temp_empty_line_file(tmp_path: pathlib.Path) -> str:
     file_path = tmp_path / "test.txt"
     data = [
-        "1. {\"test\": \"test1\"}",
+        "1|d1|1|new|01.01.2020",
         "  ",
         "         ",
-        "2. {\"test\": \"test2\"}",
+        "2|d2|2|in_progress|02.01.2020",
     ]
     file_path.write_text("\n".join(data))
     return str(file_path)

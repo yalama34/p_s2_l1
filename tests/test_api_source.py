@@ -1,5 +1,5 @@
 import pytest
-from src.task_sources import APISource
+from src.task_engine.task_sources import APISource
 
 def test_add_param(temp_valid_file):
     source = APISource(url="http://example.com")

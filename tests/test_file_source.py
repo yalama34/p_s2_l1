@@ -1,5 +1,5 @@
 import pytest
-from src.task_sources import FileSource
+from src.task_engine.task_sources import FileSource
 
 def test_add_param(temp_valid_file):
     source = FileSource(path=temp_valid_file)

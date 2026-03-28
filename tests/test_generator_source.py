@@ -1,5 +1,5 @@
 import pytest
-from src.task_sources import GeneratorSource
+from src.task_engine.task_sources import GeneratorSource
 
 def test_add_param():
     source = GeneratorSource(seed=42, count=5)

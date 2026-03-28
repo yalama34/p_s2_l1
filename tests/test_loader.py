@@ -1,6 +1,6 @@
 import pytest
-from src.task_loader import TaskLoader
-from src.task_sources import GeneratorSource
+from src.task_engine.task_loader import TaskLoader
+from src.task_engine.task_sources import GeneratorSource
 
 def test_add_valid_source(valid_source):
     loader: TaskLoader = TaskLoader()

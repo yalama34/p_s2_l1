@@ -1,11 +1,17 @@
-from .task_sources import FileSource, APISource, GeneratorSource
-from .task_loader import TaskLoader
+from pathlib import Path
 
-def main():
-    api_source: APISource = APISource(url="http://example.com")
-    file_source: FileSource = FileSource(path="C:/labs/python/sem2/p_s2_l1/example.txt")
-    generator_source: GeneratorSource = GeneratorSource(seed=13, count=5)
-    loader: TaskLoader = TaskLoader()
+from .task_engine.task_loader import TaskLoader
+from .task_engine.task_sources import APISource, FileSource, GeneratorSource
+
+
+def main() -> None:
+    root = Path(__file__).resolve().parent.parent
+    example_path = root / "example.txt"
+
+    api_source = APISource(url="http://example.com")
+    file_source = FileSource(path=str(example_path))
+    generator_source = GeneratorSource(seed=13, count=5)
+    loader = TaskLoader()
 
     loader.add_source(api_source)
     loader.add_source(file_source)
