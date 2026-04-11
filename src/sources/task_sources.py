@@ -1,23 +1,32 @@
 from __future__ import annotations
 
-"""Task source implementations: file, random generator, and API stub."""
 
 import random
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Iterator
 
-from .task import Task
+from src.engine.enums import TaskStatus
+from src.engine.task import Task
+
+
+def parse_status(raw: str) -> TaskStatus:
+    """Map file/API strings (``in_progress``, ``in progress``, enum names) to :class:`TaskStatus`."""
+    key = raw.strip().lower().replace(" ", "_")
+    for member in TaskStatus:
+        if member.name.lower() == key or member.value.lower().replace(" ", "_") == key:
+            return member
+    raise ValueError(f"Unknown task status: {raw!r}")
+
 
 class FileSource:
-    """Load tasks from a text file; each non-empty line is ``id|description|priority|status|created_at``."""
+    """Load tasks from a text file; each non-empty line is ``description|priority|status|created_at``."""
     __slots__ = ("_path",)
 
     def __init__(self, path: str) -> None:
         self._path: str = path
 
-    def get_tasks(self) -> list[Task]:
+    def get_tasks(self) -> Iterator[Task]:
         """Read and parse the file; raise :exc:`FileNotFoundError` or :exc:`ValueError` on failure."""
-        output: list[Task] = []
         try:
             with open(self._path, encoding="utf-8") as f:
                 for line in f:
@@ -25,26 +34,22 @@ class FileSource:
                     if not line:
                         continue
                     parts = line.split("|")
-                    if len(parts) != 5:
+                    if len(parts) != 4:
                         raise ValueError("Invalid line '{}'".format(line))
-                    task_id = int(parts[0].strip())
-                    description = parts[1].strip()
-                    priority = int(parts[2].strip())
-                    status = parts[3].strip()
-                    created_raw = parts[4].strip()
+                    description = parts[0].strip()
+                    priority = int(parts[1].strip())
+                    status = parse_status(parts[2].strip())
+                    created_raw = parts[3].strip()
                     created_at = datetime.strptime(created_raw, "%d.%m.%Y")
-                    output.append(
-                        Task(
-                            id=task_id,
-                            description=description,
-                            priority=priority,
-                            status=status,
-                            created_at=created_at,
-                        )
+                    yield Task(
+                        description=description,
+                        priority=priority,
+                        status=status,
+                        created_at=created_at,
                     )
+
         except FileNotFoundError:
             raise FileNotFoundError(f"File '{self._path}' not found") from None
-        return output
 
 
 class GeneratorSource:
@@ -54,27 +59,23 @@ class GeneratorSource:
     def __init__(self, seed: int, count: int) -> None:
         self._descriptions = ("desc1", "desc2", "desc3", "desc4", "desc5")
         self._priorities = (1, 2, 3, 4, 5)
-        self._statuses = ("new", "in_progress", "done", "cancelled")
+        self._statuses = tuple(TaskStatus)
         self._created_at_samples = (datetime.now(),)
         self._count = count
         self._seed = seed
 
-    def get_tasks(self) -> list[Task]:
-        """Return tasks with ids ``0 .. count-1`` and randomized fields."""
+    def get_tasks(self) -> Iterator[Task]:
+        """Return ``count`` tasks with randomized fields (new UUID id each)."""
         random.seed(self._seed)
-        output: list[Task] = []
-        for task_id in range(self._count):
+        for _ in range(self._count):
             created_raw = random.choice(self._created_at_samples)
-            output.append(
-                Task(
-                    id=task_id,
-                    description=random.choice(self._descriptions),
-                    priority=random.choice(self._priorities),
-                    status=random.choice(self._statuses),
-                    created_at=created_raw,
-                )
+            st = random.choice(self._statuses)
+            yield Task(
+                description=random.choice(self._descriptions),
+                priority=random.choice(self._priorities),
+                status=st,
+                created_at=created_raw,
             )
-        return output
 
 
 class APISource:
@@ -85,14 +86,12 @@ class APISource:
         self._url: str = url
         self._mock_api_data: dict[str, dict[str, Any]] = {
             "Task_1": {
-                "id": 1,
                 "description": "desc1",
                 "priority": 3,
                 "status": "new",
                 "created_at": datetime.now(),
             },
             "Task_2": {
-                "id": 2,
                 "description": "desc2",
                 "priority": 1,
                 "status": "in_progress",
@@ -100,19 +99,14 @@ class APISource:
             },
         }
 
-    def get_tasks(self) -> list[Task]:
+    def get_tasks(self) -> Iterator[Task]:
         """Build :class:`Task` instances from the built-in mock response body."""
-        output: list[Task] = []
         for row in self._mock_api_data.values():
             created_raw = row.get("created_at")
             created_at = created_raw if created_raw is not None else None
-            output.append(
-                Task(
-                    id=int(row["id"]),
-                    description=str(row["description"]),
-                    priority=int(row["priority"]),
-                    status=str(row["status"]),
-                    created_at=created_at,
-                )
+            yield Task(
+                description=str(row["description"]),
+                priority=int(row["priority"]),
+                status=parse_status(str(row["status"])),
+                created_at=created_at,
             )
-        return output

@@ -1,11 +1,5 @@
-"""Exceptions raised by task validation and task-related operations."""
-
-from datetime import datetime
-
-
 class TaskError(Exception):
     """Base class for task subsystem errors."""
-
     pass
 
 
@@ -31,6 +25,15 @@ class InvalidPriorityError(TaskError):
     def __init__(self, priority):
         self.priority = priority
         super().__init__(f"Priority '{self.priority}' is invalid")
+
+
+class StatusTransitionError(TaskError):
+    """Raises when status transition fails."""
+
+    def __init__(self, task_id, status):
+        self.task_id = task_id
+        self.status = status
+        super().__init__(f"Failed switch status '{self.status}' for task '{self.task_id}'")
 
 
 class InvalidCreationDateError(TaskError):

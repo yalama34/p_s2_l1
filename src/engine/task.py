@@ -1,17 +1,17 @@
 from __future__ import annotations
-
-"""Domain model for a single processing task."""
-
 from datetime import datetime
 from typing import Optional
+from uuid import uuid4, UUID
 
 from ..descriptors.descriptors import PriorityDescriptor, StatusDescriptor, CreatedAtDescriptor, IsReadyDescriptor
+from .enums import TaskStatus
 
 
 class Task:
     """Task with validated priority, status, and creation time.
 
-    ``id`` and ``description`` are exposed via the builtin ``property`` (getter/setter/deleter);
+    ``id`` is a read-only :class:``uuid.UUID`` assigned at construction;
+    ``description`` uses the builtin ``property`` (getter/setter/deleter);
     ``priority``, ``status``, ``created_at``, and ``is_ready`` use custom descriptors.
     """
 
@@ -24,14 +24,13 @@ class Task:
 
     def __init__(
         self,
-        id: int,
         description: str,
         priority: int,
-        status: str = "new",
+        status: TaskStatus = TaskStatus.NEW,
         created_at: Optional[datetime] = None,
     ) -> None:
-        """Create a task. If ``created_at`` is omitted, the current time is used."""
-        self.id = id
+        """Create a task with a new random id. If ``created_at`` is omitted, the current time is used."""
+        object.__setattr__(self, "_id", uuid4())
         self.description = description
         self.priority = priority
         self.status = status
@@ -46,14 +45,8 @@ class Task:
         )
 
     @property
-    def id(self) -> int:
+    def id(self) -> UUID:
         return self._id
-
-    @id.setter
-    def id(self, value: int) -> None:
-        if not isinstance(value, int) or value < 0:
-            raise ValueError("ID must be a non-negative integer")
-        self._id = value
 
     @id.deleter
     def id(self) -> None:
@@ -72,4 +65,8 @@ class Task:
     @description.deleter
     def description(self) -> None:
         del self._description
+
+    def change_status(self) -> None:
+        """Change the status of the task."""
+        self.status = TaskStatus.get_next_status(self.status)
 

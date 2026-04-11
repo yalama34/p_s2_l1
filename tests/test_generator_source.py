@@ -1,5 +1,6 @@
 import pytest
-from src.task_engine.task_sources import GeneratorSource
+
+from src.sources.task_sources import GeneratorSource
 
 def test_add_param():
     source = GeneratorSource(seed=42, count=5)
@@ -8,5 +9,5 @@ def test_add_param():
 
 def test_source():
     source = GeneratorSource(seed=42, count=5)
-    tasks = source.get_tasks()
-    assert len(tasks) == 5 and isinstance(tasks, list)
+    tasks = list(source.get_tasks())
+    assert len(tasks) == 5

@@ -6,27 +6,37 @@
 ## Структура
 ```
 ├── src/
-│   ├── __init__.py                 
-│   ├── main.py                     
+│   ├── __init__.py
+│   ├── main.py
+│   ├── contracts/
+│   │   ├── __init__.py
+│   │   └── contract.py
 │   ├── descriptors/
 │   │   ├── __init__.py
-│   │   └── descriptors.py          
-│   └── task_engine/
+│   │   └── descriptors.py
+│   ├── engine/
+│   │   ├── __init__.py
+│   │   ├── enums.py
+│   │   ├── iterator.py
+│   │   ├── queue.py
+│   │   ├── task.py
+│   │   ├── task_errors.py
+│   │   └── task_loader.py
+│   └── sources/
 │       ├── __init__.py
-│       ├── task.py                 
-│       ├── task_errors.py         
-│       ├── contract.py             
-│       ├── task_loader.py          
-│       └── task_sources.py         
+│       └── task_sources.py
 ├── tests/
-│   ├── conftest.py                 
-│   ├── test_descriptors.py         
+│   ├── conftest.py
+│   ├── test_api_source.py
+│   ├── test_descriptors.py
+│   ├── test_enums.py
 │   ├── test_file_source.py
 │   ├── test_generator_source.py
-│   ├── test_api_source.py
-│   └── test_loader.py
-├── example.txt                    
-├── pyproject.toml                  
+│   ├── test_loader.py
+│   ├── test_task_errors.py
+│   └── test_task_queue.py
+├── example.txt
+├── pyproject.toml
 ├── .gitignore
 ├── .coverage
 └── README.md
@@ -72,12 +82,12 @@ python -m src.main
 
 ## Подсистема приёма задач
 
-## Типы источников задач (лаб. №1)
+## Типы источников задач
 1. **FileSource** — загрузка из файла по шаблону строки (пример в `example.txt`).
 2. **GeneratorSource** — псевдослучайный набор задач с фиксированным seed.
 3. **APISource** — заглушка внешнего API с данными в памяти.
 
-## Контракт источника (лаб. №1)
+## Контракт источника
 Все источники реализуют единый протокол без общего базового класса:
 
 ```python
@@ -88,6 +98,12 @@ class TaskSource(Protocol):
         ...
 ```
 
+## Очередь задач `TaskQueue`
+
+Класс **`TaskQueue`** (`src/engine/queue.py`) задаёт ленивый обход потока задач без хранения всего списка в памяти. В конструктор передаётся **фабрика** `task_source_factory: Callable[[], Iterator[Task]]` — функция без аргументов, которая при каждом вызове возвращает новый итератор по задачам (например, заново читает источники). При обходе `for task in queue:` внутри создаётся **`TaskIterator`**, который делегирует `__next__` этому итератору.
+
+Повторный полный обход очереди снова вызывает фабрику, поэтому можно многократно проходить по «свежему» потоку задач. Метод **`filter(mask)`** принимает предикат `mask(task) -> bool` и лениво отдаёт только подходящие задачи; если `mask` не вызываемый объект, возникает **`TypeError`**.
+
 ## Тесты с покрытием
 ```bash
 pytest --cov=src --cov-report=term-missing tests/
@@ -97,20 +113,25 @@ pytest --cov=src --cov-report=term-missing tests/
 Пример отчёта о покрытии (значения зависят от текущей версии кода):
 
 ```
-Name                              Stmts   Miss  Cover   Missing
----------------------------------------------------------------
-src\__init__.py                       0      0   100%
-src\descriptors\__init__.py           0      0   100%
-src\descriptors\descriptors.py       54      7    87%   22, 33, 44, 60, 73, 83, 89
-src\main.py                          18     18     0%   1-26
-src\task_engine\__init__.py           0      0   100%
-src\task_engine\contract.py           5      0   100%
-src\task_engine\task.py              43      4    91%   43, 60, 69, 74
-src\task_engine\task_errors.py       23      4    83%   16-17, 24-25
-src\task_engine\task_loader.py       17      0   100%
-src\task_engine\task_sources.py      59      0   100%
----------------------------------------------------------------
-TOTAL                               219     33    85%
+Name                             Stmts   Miss  Cover   Missing
+--------------------------------------------------------------
+src\__init__.py                      0      0   100%
+src\contracts\__init__.py            0      0   100%
+src\contracts\contract.py            5      0   100%
+src\descriptors\__init__.py          0      0   100%
+src\descriptors\descriptors.py      53      0   100%
+src\engine\__init__.py               0      0   100%
+src\engine\enums.py                 17      0   100%
+src\engine\iterator.py              10      0   100%
+src\engine\queue.py                 14      0   100%
+src\engine\task.py                  41      5    88%   42, 53, 62, 67, 71
+src\engine\task_errors.py           27      0   100%
+src\engine\task_loader.py           16      0   100%
+src\main.py                         27     27     0%   3-42
+src\sources\__init__.py              0      0   100%
+src\sources\task_sources.py         59      1    98%   18
+--------------------------------------------------------------
+TOTAL                              269     33    88%
 ```
 
 ## Вывод

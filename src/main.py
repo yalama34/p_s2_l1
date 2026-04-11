@@ -1,25 +1,41 @@
-from pathlib import Path
+"""Демо: загрузчик, несколько источников, очередь с повторным обходом."""
 
-from .task_engine.task_loader import TaskLoader
-from .task_engine.task_sources import APISource, FileSource, GeneratorSource
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Iterator
+
+from src.engine.queue import TaskQueue
+from src.engine.task import Task
+from src.engine.task_loader import TaskLoader
+from src.sources.task_sources import APISource, FileSource, GeneratorSource
+
+
+def _example_file_path() -> Path:
+    return Path(__file__).resolve().parents[1] / "example.txt"
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parent.parent
-    example_path = root / "example.txt"
-
-    api_source = APISource(url="http://example.com")
-    file_source = FileSource(path=str(example_path))
-    generator_source = GeneratorSource(seed=13, count=5)
     loader = TaskLoader()
+    loader.add_source(FileSource(str(_example_file_path())))
+    loader.add_source(APISource("https://api.example.com"))
+    loader.add_source(GeneratorSource(seed=42, count=10))
 
-    loader.add_source(api_source)
-    loader.add_source(file_source)
-    loader.add_source(generator_source)
+    def task_factory() -> Iterator[Task]:
+        yield from loader.get_tasks()
 
-    tasks = loader.get_tasks()
-    for task in tasks:
+    queue = TaskQueue(task_source_factory=task_factory)
+
+    first = list(queue)
+    second = list(queue)
+    print(f"First iteration: {len(first)} tasks")
+    print(f"Second iteration: {len(second)} tasks")
+
+    print("TaskQueue:")
+    example = list(queue)
+    for task in example:
         print(task)
+
 
 
 if __name__ == "__main__":

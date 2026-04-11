@@ -1,5 +1,6 @@
 import pytest
-from src.task_engine.task_sources import APISource
+
+from src.sources.task_sources import APISource
 
 def test_add_param(temp_valid_file):
     source = APISource(url="http://example.com")
@@ -8,5 +9,5 @@ def test_add_param(temp_valid_file):
 
 def test_source():
     source = APISource(url="http://example.com")
-    tasks = source.get_tasks()
-    assert len(tasks) == 2 and isinstance(tasks, list)
+    tasks = list(source.get_tasks())
+    assert len(tasks) == 2

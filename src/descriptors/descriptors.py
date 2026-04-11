@@ -4,11 +4,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from ..task_engine.task_errors import InvalidCreationDateError, InvalidPriorityError, InvalidStatusError
+from ..engine.task_errors import InvalidCreationDateError, InvalidPriorityError, InvalidStatusError
+from ..engine.enums import TaskStatus
 
 
 if TYPE_CHECKING:
-    from ..task_engine.task import Task
+    from ..engine.task import Task
 
 
 class PriorityDescriptor:
@@ -43,9 +44,7 @@ class CreatedAtDescriptor:
         if obj is None:
             return self
 
-        created_at =  getattr(obj, self.name, None)
-        formatted_created_at = created_at.strftime("%d.%m.%Y %H:%M:%S")
-        return formatted_created_at
+        return getattr(obj, self.name, None)
 
     def __set__(self, obj: Task, value: datetime) -> None:
         if not isinstance(value, datetime):
@@ -63,7 +62,7 @@ class CreatedAtDescriptor:
 class StatusDescriptor:
     """Validate status parameter. It must be a string from ``valid_statuses``: ``"new", "in_progress", "done", "cancelled"`` """
 
-    valid_statuses = ("new", "in_progress", "done", "cancelled")
+    valid_statuses = [status.name for status in TaskStatus]
 
     def __set_name__(self, owner: Task, name: str) -> None:
         self.name = "_" + name
@@ -73,17 +72,17 @@ class StatusDescriptor:
             return self
         return getattr(obj, self.name, None)
 
-    def __set__(self, obj: Task, value: str) -> None:
-        if not isinstance(value, str) or value not in self.valid_statuses:
-            raise InvalidStatusError(value)
-
+    def __set__(self, obj: Task, value: TaskStatus) -> None:
+        if not isinstance(value, TaskStatus):
+            raise InvalidStatusError(
+                f"Status must be TaskStatus enum, got {type(value).__name__}: {value}"
+            )
         setattr(obj, self.name, value)
 
     def __delete__(self, obj) -> None:
         delattr(obj, self.name)
 
 class IsReadyDescriptor:
-
     def __get__(self, obj: Task, obj_type=None) -> Any:
         if obj is None:
             return self
