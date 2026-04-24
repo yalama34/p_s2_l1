@@ -1,15 +1,14 @@
-import enum
-from typing import Optional
+from enum import StrEnum
 
 
-class TaskStatus(enum.Enum):
+class TaskStatus(StrEnum):
     NEW = "new"
     IN_PROGRESS = "in progress"
     DONE = "done"
     CANCELLED = "cancelled"
 
     @classmethod
-    def get_next_status(cls, current: 'TaskStatus') -> Optional['TaskStatus']:
+    def get_next_status(cls, current: str) -> str:
         statuses = list(cls)
         cur_index = statuses.index(current)
         print(cur_index)

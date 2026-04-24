@@ -26,7 +26,7 @@ class Task:
         self,
         description: str,
         priority: int,
-        status: TaskStatus = TaskStatus.NEW,
+        status: str = TaskStatus.NEW,
         created_at: Optional[datetime] = None,
     ) -> None:
         """Create a task with a new random id. If ``created_at`` is omitted, the current time is used."""
