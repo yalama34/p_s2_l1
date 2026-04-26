@@ -1,6 +1,5 @@
 from typing import Callable, Iterator
 
-
 from .task import Task
 from .iterator import TaskIterator
 

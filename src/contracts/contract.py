@@ -1,5 +1,3 @@
-"""Protocol for pluggable task providers (structural typing)."""
-
 from typing import Protocol, runtime_checkable, Iterator
 
 from src.engine.task import Task

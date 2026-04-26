@@ -26,17 +26,12 @@ class Task:
         self,
         description: str,
         priority: int,
-        status: str = TaskStatus.NEW,
-        created_at: Optional[datetime] = None,
     ) -> None:
-        """Create a task with a new random id. If ``created_at`` is omitted, the current time is used."""
         object.__setattr__(self, "_id", uuid4())
         self.description = description
         self.priority = priority
-        self.status = status
-        if created_at is None:
-            created_at = datetime.now()
-        self.created_at = created_at
+        self.status = TaskStatus.NEW
+        self.created_at = datetime.now()
 
     def __repr__(self) -> str:
         return (
@@ -69,4 +64,7 @@ class Task:
     def change_status(self) -> None:
         """Change the status of the task."""
         self.status = TaskStatus.get_next_status(self.status)
+
+    def failure(self) -> None:
+        self.status = TaskStatus.CANCELLED
 

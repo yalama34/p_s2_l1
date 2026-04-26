@@ -8,7 +8,7 @@ from src.engine.task import Task
 
 def get_tasks(*descriptions: str):
     for d in descriptions:
-        yield Task(d, 1, TaskStatus.NEW)
+        yield Task(d, 1)
 
 
 def test_task_iterator_iter_returns_self_and_yields() -> None:
@@ -34,7 +34,7 @@ def test_task_queue_each_iteration_calls_factory() -> None:
     def factory():
         nonlocal calls
         calls += 1
-        yield Task("only", 2, TaskStatus.NEW)
+        yield Task("only", 2)
 
     q = TaskQueue(factory)
     assert len(list(q)) == 1
@@ -44,9 +44,9 @@ def test_task_queue_each_iteration_calls_factory() -> None:
 
 def test_task_queue_filter_yields_matching() -> None:
     def factory():
-        yield Task("a", 1, TaskStatus.NEW)
-        yield Task("b", 3, TaskStatus.NEW)
-        yield Task("c", 5, TaskStatus.NEW)
+        yield Task("a", 1)
+        yield Task("b", 3)
+        yield Task("c", 5)
 
     q = TaskQueue(factory)
     out = list(q.filter(lambda t: t.priority >= 3))

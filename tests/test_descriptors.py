@@ -20,16 +20,19 @@ def test_invalid_priority():
         Task("d", 6)
 
 
-def test_invalid_created_at():
-    with pytest.raises(InvalidCreationDateError):
-        Task("d", 5, TaskStatus.NEW, 11)  # type: ignore[arg-type]
-    with pytest.raises(InvalidCreationDateError):
-        Task("d", 5, TaskStatus.NEW, datetime.datetime.now() + datetime.timedelta(days=1))
+    def test_invalid_created_at():
+        with pytest.raises(InvalidCreationDateError):
+            task = Task("d", 5)
+            task.created_at = 11  # type: ignore[assignment]
+        with pytest.raises(InvalidCreationDateError):
+            task = Task("d", 5)
+            task.created_at = datetime.datetime.now() + datetime.timedelta(days=1)
 
 
 def test_invalid_status():
     with pytest.raises(InvalidStatusError):
-        Task("d", 5, "AAAAAAA")
+        task = Task("d", 5)
+        task.status = "AAAAAAA"
 
 
 def test_created_at_default():
@@ -43,7 +46,9 @@ def test_created_at_default():
 
 def test_private_fields_match_public_values():
     fixed = datetime.datetime(2020, 6, 15, 12, 30, 45)
-    task = Task("d", 5, TaskStatus.IN_PROGRESS, fixed)
+    task = Task("d", 5)
+    task.created_at = fixed
+    task.status = TaskStatus.IN_PROGRESS
     assert task.id == task._id
     assert task.status == task._status
     assert task.description == task._description
@@ -52,7 +57,7 @@ def test_private_fields_match_public_values():
 
 
 def test_non_data_descriptor():
-    task = Task("d", 5, TaskStatus.NEW)
+    task = Task("d", 5)
     with pytest.raises(AttributeError):
         task.is_ready = False
 
@@ -65,7 +70,8 @@ def test_descriptors_on_class_return_descriptor() -> None:
 
 
 def test_delete_descriptor_backed_attributes() -> None:
-    task = Task("x", 3, TaskStatus.DONE)
+    task = Task("x", 3)
+    task.status = TaskStatus.DONE
     del task.priority
     del task.created_at
     del task.status
@@ -76,10 +82,11 @@ def test_delete_descriptor_backed_attributes() -> None:
 
 def test_created_at_timezone_aware_past_accepted() -> None:
     past = datetime.datetime(2000, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-    task = Task("x", 1, TaskStatus.NEW, past)
+    task = Task("x", 1)
+    task.created_at = past
     assert task.created_at == past
 
 
 def test_is_ready_read_on_instance() -> None:
-    task = Task("d", 5, TaskStatus.NEW)
+    task = Task("d", 4)
     assert task.is_ready is False

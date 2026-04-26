@@ -86,4 +86,4 @@ class IsReadyDescriptor:
     def __get__(self, obj: Task, obj_type=None) -> Any:
         if obj is None:
             return self
-        return obj.priority == 5 and obj.status == "new"
+        return obj.priority == 5 and obj.status == TaskStatus.NEW

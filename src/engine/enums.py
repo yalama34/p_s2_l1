@@ -11,7 +11,6 @@ class TaskStatus(StrEnum):
     def get_next_status(cls, current: str) -> str:
         statuses = list(cls)
         cur_index = statuses.index(current)
-        print(cur_index)
 
         match cur_index:
             case 2 | 3:

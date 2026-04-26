@@ -1,6 +1,5 @@
 from typing import List, Iterator
 
-
 from src.contracts.contract import TaskSource
 from .task import Task
 
@@ -19,7 +18,6 @@ class TaskLoader:
             raise TypeError("Current source does not fit the contract\nmethod get_tasks() did not found")
 
         self._sources.append(source)
-        print(f"Loader successfully added tasks from source {source.__class__.__name__}")
 
         return None
 
