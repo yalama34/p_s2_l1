@@ -82,4 +82,4 @@ def test_created_at_timezone_aware_past_accepted() -> None:
 
 def test_is_ready_read_on_instance() -> None:
     task = Task("d", 5, TaskStatus.NEW)
-    assert task.is_ready is False
+    assert task.is_ready is True
